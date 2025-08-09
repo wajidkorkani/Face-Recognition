@@ -27,21 +27,13 @@ while True:
 cap.release()
 cv2.destroyAllWindows()
 
-# -------- Step 2: Compare with known images --------
-images = [
-    "one.jpg", 
-    "two.jpg", 
-    "three.jpg", 
-    "four.jpg", 
-    "five.jpg", 
-    "six.jpg", 
-    "seven.jpg",
-    "eight.jpg",
-    "nine.jpg",
-    "ten.jpg",
-    "eleven.jpg",
-    "13.jpg",
-]
+# -------- Step 2: Known images dictionary --------
+images = {
+    "Elon Musk": ["one.jpg", "two.jpg"],
+    "Mark Zuckerberg": ["three.jpg", "four.jpg", "five.jpg", "six.jpg"],
+    "Bill Gates": ["seven.jpg", "ten.jpg", "eleven.jpg"],
+    "Jeff Bezos": ["eight.jpg", "nine.jpg"],
+}
 
 # Load captured image
 unknown_image = face_recognition.load_image_file(captured_path)
@@ -53,18 +45,27 @@ if not unknown_encodings:
 
 unknown_encoding = unknown_encodings[0]
 
-# Compare with each known image
-for img_name in images:
-    known_image = face_recognition.load_image_file(img_name)
-    known_encodings = face_recognition.face_encodings(known_image)
+# -------- Step 3: Compare with each known image --------
+found_match = False
 
-    if not known_encodings:
-        print(f"No face found in {img_name}")
-        continue
+for person_name, img_list in images.items():
+    for img_path in img_list:
+        known_image = face_recognition.load_image_file(img_path)
+        known_encodings = face_recognition.face_encodings(known_image)
 
-    known_encoding = known_encodings[0]
-    results = face_recognition.compare_faces([known_encoding], unknown_encoding)
+        if not known_encodings:
+            print(f"No face found in {img_path}")
+            continue
 
-    if results[0]:
-        print(f"Image {img_name} matches the captured image.")
+        known_encoding = known_encodings[0]
+        results = face_recognition.compare_faces([known_encoding], unknown_encoding)
+
+        if results[0]:
+            print(f"Captured image matches {person_name} (from {img_path})")
+            found_match = True
+            break  # Stop after first match
+    if found_match:
         break
+
+if not found_match:
+    print("No match found.")
